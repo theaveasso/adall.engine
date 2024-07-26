@@ -1,7 +1,9 @@
 #ifndef ADALLGL_PCH_H
 #define ADALLGL_PCH_H
 
+#include <fstream>
 #include <iostream>
+
 #include <memory>
 #include <string>
 #include <unordered_map>

@@ -100,19 +100,19 @@ struct adlTextureLoader {
     /// @param height The height of the loaded texture will be stored here.
     /// @param isPixelated Whether to apply pixelation effects to the texture.
     /// @return True if the texture is loaded successfully, false otherwise.
-    static bool adlLoadTexture(const char *texturePath, int &width, int &height, bool isPixelated);
+    static bool adlLoadTexture(const std::string& texturePath, int &width, int &height, bool isPixelated);
 
     /// Creates a shared pointer to an adlTexture object.
     ///
     /// @param texturePath The path to the texture image file.
     /// @param textureType The type of the texture (2D, cubemap, etc.).
     /// @return A shared pointer to the created adlTexture object, or nullptr on failure.
-    static std::shared_ptr<adlTexture> makeADLTexture(const char *texturePath, adlTextureType textureType);
+    static std::shared_ptr<adlTexture> makeADLTexture(const std::string &texturePath, adlTextureType textureType);
 };
 
 // ###################################################################
 //                          adlShaderLoader
-// ###################################################################
+// -------------------------------------------------------------------
 struct adlShaderLoader {
 private:
     ///  Compiles a GL shader of the specified type from the given shader path.
@@ -120,7 +120,7 @@ private:
     ///  @param shaderType The type of shader (GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, etc.).
     ///  @param shaderPath The path to the shader source file.
     ///  @return The ID of the compiled shader, or 0 on failure.
-    static GLuint compileGLShader(GLuint shaderType, const char *shaderPath);
+    static GLuint compileGLShader(GLuint shaderType, const std::string &shaderPath);
 
     /// Checks if the compilation of the shader was successful.
     ///
@@ -140,7 +140,8 @@ public:
     /// @param vertShaderPath The path to the vertex shader source file.
     /// @param fragShaderPath The path to the fragment shader source file.
     /// @return A shared pointer to the created adlShader object, or nullptr on failure.
-    static std::shared_ptr<adlShader> makeADLShader(const char *vertShaderPath, const char *fragShaderPath);
+    static std::shared_ptr<adlShader> makeADLShader(const std::string &vertShaderPath
+                                                  , const std::string &fragShaderPath);
 };
 
 #endif //ADALGL_VIEW_H

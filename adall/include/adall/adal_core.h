@@ -1,6 +1,8 @@
 #ifndef ADAL_CORE_H
 #define ADAL_CORE_H
 
+#include <utility>
+
 #include "entt/entt.hpp"
 
 #include "adal_pch.h"
@@ -19,7 +21,9 @@ namespace adlCore {
 
 	public:
 		/// @brief Constructs an adlRegistry instance.
-		adlRegistry();
+		adlRegistry() {
+			m_registry = std::make_unique<entt::registry>();
+		};
 
 		/// @brief @brief Default destructor.
 		~adlRegistry() = default;
@@ -31,6 +35,12 @@ namespace adlCore {
 		/// @brief Creates a new entity in the registry.
     	/// @return The created entity.
 		[[nodiscard]] inline entt::entity makeEntity() const { return m_registry->create(); };
+
+		/// @brief Delete an entity in the registry.
+    	/// @return The deleted entity.
+		[[nodiscard]] inline std::uint32_t destroyEntity(const entt::entity &entity) const {
+			return m_registry->destroy(entity);
+		};
 
 		/// @brief Adds a context to the registry.
     	/// @tparam TContext The type of the context.
@@ -51,29 +61,9 @@ namespace adlCore {
 	};
 
 	// ###################################################################
-	//							  adlEntityManager
+	//							  adlEntity
 	// ###################################################################
-	class adlEntity;
-
-	class adlEntityManager {
-	private:
-		adlRegistry &m_registry;
-
-	public:
-		explicit adlEntityManager(adlRegistry &registry)
-			: m_registry(registry) {
-		};
-
-		~adlEntityManager() = default;
-
-		adlEntity makeEntity(const std::string &name = "", const std::string &group = "");
-
-		std::uint32_t killEntity(adlEntity &entity);
-	};
-
-	// ###################################################################
-	//							  adlEntityManager
-	// ###################################################################
+	class adlEntityManager;
 
 	class adlEntity {
 		friend adlEntityManager;
@@ -84,7 +74,7 @@ namespace adlCore {
 		std::string  m_name, m_group;
 
 	public:
-		adlEntity(adlRegistry& registry, entt::entity entity, const std::string &name, const std::string &group);
+		adlEntity(adlRegistry &registry, entt::entity entity, std::string name, const std::string &group);;
 
 		inline entt::entity &getEntity() { return m_entity; };
 
@@ -111,7 +101,7 @@ namespace adlCore {
 		template<typename TComponent, typename... Args>
 		TComponent &adlReplaceComponent(Args &&... args) {
 			if (adlHasComponent<TComponent>()) {
-				return m_registry.getRegistry().replace<TComponent>(m_entity, std::forward<Args>(args)...);
+				return m_registry.getRegistry().replace<TComponent>(std::forward<Args>(args)...);
 			}
 			return nullptr;
 		}
@@ -124,14 +114,35 @@ namespace adlCore {
 			return nullptr;
 		}
 
-
 		template<typename TComponent>
-		void adlRemoveComponent() const {
-			if (adlHasComponent<TComponent>()) {
-				m_registry.getRegistry().remove<TComponent>(m_entity);
+		void adlRemoveComponent(entt::entity &entity) const {
+			if (adlHasComponent<TComponent>(entity)) {
+				m_registry.getRegistry().remove<TComponent>(entity);
 			}
 		}
 	};
+
+	// ###################################################################
+	//							  adlEntityManager
+	// ###################################################################
+	class adlEntityManager {
+	private:
+		adlRegistry &m_registry;
+
+	public:
+		explicit adlEntityManager(adlRegistry &registry)
+			: m_registry(registry) {
+		};
+
+		~adlEntityManager() = default;
+
+		[[nodiscard]] adlEntity makeEntity(const std::string &name = "", const std::string &group = "") const {
+			return {m_registry, m_registry.makeEntity(), name, group};
+		};
+
+		std::uint32_t killEntity(adlEntity &entity);
+	};
+
 
 	// ###################################################################
 	//							  adlAssetManager
@@ -140,16 +151,20 @@ namespace adlCore {
 	typedef std::unordered_map<std::string, std::shared_ptr<adlShader> >  adlShaderMap;
 
 	class adlAssetManager {
+	private:
+		adlTextureMap m_textureMap;
+		adlShaderMap  m_shaderMap;
+
 	public:
 		adlAssetManager() = default;
 
 		~adlAssetManager() = default;
 
-		bool addTexture(const std::string &name, const std::string &texturePath, bool isPixelated = true);
+		bool makeTexture(const std::string &name, const std::string &texturePath, bool isPixelated = true);
 
-		bool addShader(const std::string &name
-		             , const std::string &vertexShaderSourcePath
-		             , const std::string &fragmentShaderSourcePath);
+		bool makeShader(const std::string &name
+		              , const std::string &vertShaderPath
+		              , const std::string &fragShaderPath);
 
 		const adlTexture &getTexture(const std::string &name);
 

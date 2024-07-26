@@ -1,18 +1,21 @@
 #ifndef ADALLGL_APPLICATION_H
 #define ADALLGL_APPLICATION_H
 
-#include "adal_pch.h"
 #include "adal_core.h"
+#include "adal_editor.h"
+#include "adal_pch.h"
 
-class adlglApplication {
+class adlApplication {
 private:
 	GLFWwindow *m_window;
 
 	std::unique_ptr<adlCore::adlRegistry> m_registry;
 
+	std::unique_ptr<adlEditor> m_editor;
+
 	bool m_running = true;
 
-	adlglApplication();
+	adlApplication();
 
 	bool init();
 
@@ -23,13 +26,13 @@ private:
 	void makeGraphicsPipeline();
 
 public:
-	adlglApplication(const adlglApplication &) = delete;
+	adlApplication(const adlApplication &) = delete;
 
-	adlglApplication &operator=(const adlglApplication &) = delete;
+	adlApplication &operator=(const adlApplication &) = delete;
 
-	static adlglApplication &getInstance();
+	static adlApplication &getInstance();
 
-	virtual ~adlglApplication() = default;
+	virtual ~adlApplication() = default;
 
 	void run();
 };

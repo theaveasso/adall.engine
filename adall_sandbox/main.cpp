@@ -1,10 +1,10 @@
-#include "adall/adal.h"
+#include "adall/adall.h"
 
-class adlglSandbox : public adlglApplication {
+class adlglSandbox : public adlApplication {
 public:
 	~adlglSandbox() override = default;
 };
 
-adlglApplication& adlglMakeApplication() {
+adlApplication& adlMakeApplication() {
 	return adlglSandbox::getInstance();
 }

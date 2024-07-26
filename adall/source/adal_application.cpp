@@ -1,15 +1,19 @@
 #include "adall/adal_application.h"
 
-adlglApplication::adlglApplication(): m_window(nullptr) {
+#include "adall/adal_component.h"
+#include "adall/adal_system.h"
+
+adlApplication::adlApplication()
+	: m_window(nullptr) {
 	if (!init()) {
-		std::cout << "failed to initialize adlglApplication" << std::endl;
+		std::cout << "failed to initialize adlApplication" << std::endl;
 		glfwTerminate();
 		m_running = false;
 		return;
 	}
 }
 
-bool adlglApplication::setupGLFW() {
+bool adlApplication::setupGLFW() {
 	if (!glfwInit()) {
 		std::cout << "failed to initialize glfw" << std::endl;
 		return false;
@@ -34,21 +38,46 @@ bool adlglApplication::setupGLFW() {
 	return true;
 }
 
-bool adlglApplication::setupAdallCore() {
-
+bool adlApplication::setupAdallCore() {
 	m_registry = std::make_unique<adlCore::adlRegistry>();
+	m_editor   = std::make_unique<adlEditor>(m_window);
+	m_editor->init();
 
-	if (const auto assetManager = std::make_shared<adlCore::adlAssetManager>(); !m_registry->adlAddContext<std::shared_ptr<adlCore::adlAssetManager>>(assetManager)) {
+	if (const auto camera2D = std::make_shared<adlSystem::Camera2D>(m_window); !m_registry->adlAddContext<
+		std::shared_ptr<adlSystem::Camera2D> >(camera2D)) {
 		return false;
 	}
+
+	const auto assetManager = std::make_shared<adlCore::adlAssetManager>();
+	if (!m_registry->adlAddContext<std::shared_ptr<adlCore::adlAssetManager> >(assetManager)) {
+		return false;
+	}
+
+	if (!assetManager->makeShader(
+	                         "shader",
+	                         "asset/shader/basic.vert.glsl",
+	                         "asset/shader/basic.frag.glsl"
+	                        )) {
+		return false;
+	};
+
+	if (const auto entityManager = std::make_shared<adlCore::adlEntityManager>(*m_registry); !m_registry->adlAddContext<
+		std::shared_ptr<adlCore::adlEntityManager> >(entityManager)) {
+		return false;
+	}
+
+	auto em     = m_registry->adlGetContext<std::shared_ptr<adlCore::adlEntityManager> >();
+	auto camera = em->makeEntity();
+	camera.addComponent<adlComponent::Camera>();
+
 
 	return true;
 }
 
-void adlglApplication::makeGraphicsPipeline() {
+void adlApplication::makeGraphicsPipeline() {
 }
 
-bool adlglApplication::init() {
+bool adlApplication::init() {
 	if (!setupGLFW()) {
 		std::cout << "failed to create glfw window" << std::endl;
 		return false;
@@ -62,15 +91,18 @@ bool adlglApplication::init() {
 	return true;
 }
 
-void adlglApplication::run() {
+void adlApplication::run() {
 	while (!glfwWindowShouldClose(m_window) && m_running) {
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+		m_editor->render();
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
 	}
 }
 
-adlglApplication &adlglApplication::getInstance() {
-	static adlglApplication instance;
+adlApplication &adlApplication::getInstance() {
+	static adlApplication instance;
 	return instance;
 }
 

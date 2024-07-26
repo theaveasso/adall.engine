@@ -3,10 +3,10 @@
 
 #include "adal_application.h"
 
-extern adlglApplication& adlglMakeApplication();
+extern adlApplication& adlMakeApplication();
 
 int main(int argc, char** argv) {
-    auto& application = adlglMakeApplication();
+    auto& application = adlMakeApplication();
     application.run();
 
     return 0;
